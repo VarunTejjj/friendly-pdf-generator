@@ -1,20 +1,9 @@
-from flask import Flask, request, send_file, send_from_directory
+from flask import Flask, request, send_file, jsonify
 from fpdf import FPDF
 import os
 from datetime import datetime
-from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
-UPLOAD_FOLDER = '/data/data/com.termux/files/home/uploads'
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-
-@app.route('/')
-def index():
-    return send_from_directory('.', 'index.html')
-
-@app.route('/style.css')
-def css():
-    return send_from_directory('.', 'style.css')
 
 class PDF(FPDF):
     def header(self):
@@ -26,11 +15,6 @@ class PDF(FPDF):
         self.set_y(-15)
         self.set_font('Arial', 'I', 10)
         self.cell(0, 10, 'By Varun Tej', align='C')
-
-    def add_photo(self, photo_path):
-        if os.path.exists(photo_path):
-            self.image(photo_path, x=65, w=80)  # center-aligned image
-            self.ln(85)
 
     def add_section(self, title, data):
         self.set_font('Arial', 'B', 14)
@@ -45,74 +29,70 @@ class PDF(FPDF):
 
 @app.route('/generate-pdf', methods=['POST'])
 def generate_pdf():
-    if 'photo' in request.files:
-        photo = request.files['photo']
-        filename = secure_filename(photo.filename)
-        photo_path = os.path.join(UPLOAD_FOLDER, filename)
-        photo.save(photo_path)
-    else:
-        photo_path = None
+    try:
+        data = request.json
+        if not data:
+            return jsonify({'error': 'No data provided'}), 400
 
-    data = request.form
-
-    sections = {
-        "Basic Information": {
-            "Full Name": data.get("fullName"),
-            "Nickname": data.get("nickname"),
-            "Gender": data.get("gender"),
-            "Date of Birth": data.get("dob"),
-            "Age": data.get("age"),
-            "Blood Group": data.get("bloodGroup")
-        },
-        "Contact Information": {
-            "Phone": data.get("phone"),
-            "Email": data.get("email"),
-            "Address": data.get("address"),
-            "City": data.get("city"),
-            "State": data.get("state"),
-            "PIN Code": data.get("pin")
-        },
-        "Personal Info": {
-            "Hobbies": data.get("hobbies"),
-            "Favorite Food": data.get("favFood"),
-            "Favorite Color": data.get("favColor"),
-            "Favorite Game/Movie/Song": data.get("favGame"),
-            "Best Friend's Name": data.get("bestFriend"),
-            "Crush or Lover": data.get("crush")
-        },
-        "School/College Info": {
-            "School/College Name": data.get("school"),
-            "Class/Grade": data.get("class"),
-            "Favorite Subject": data.get("favSubject"),
-            "Least Favorite Subject": data.get("leastFavSubject"),
-            "Achievements": data.get("achievements")
-        },
-        "Social Media": {
-            "Instagram ID": data.get("instagram"),
-            "Telegram Username": data.get("telegram"),
-            "WhatsApp Number": data.get("whatsapp")
-        },
-        "Fun & Memories": {
-            "Funniest Memory": data.get("memory"),
-            "What You Like Most About Them": data.get("likes"),
-            "Personal Message or Quote": data.get("message")
+        sections = {
+            "Basic Information": {
+                "Full Name": data.get("fullName"),
+                "Nickname": data.get("nickname"),
+                "Gender": data.get("gender"),
+                "Date of Birth": data.get("dob"),
+                "Age": data.get("age"),
+                "Blood Group": data.get("bloodGroup")
+            },
+            "Contact Information": {
+                "Phone": data.get("phone"),
+                "Email": data.get("email"),
+                "Address": data.get("address"),
+                "City": data.get("city"),
+                "State": data.get("state"),
+                "PIN Code": data.get("pin")
+            },
+            "Personal Info": {
+                "Hobbies": data.get("hobbies"),
+                "Favorite Food": data.get("favFood"),
+                "Favorite Color": data.get("favColor"),
+                "Favorite Game/Movie/Song": data.get("favGame"),
+                "Best Friend's Name": data.get("bestFriend"),
+                "Crush or Lover": data.get("crush")
+            },
+            "School/College Info": {
+                "School/College Name": data.get("school"),
+                "Class/Grade": data.get("class"),
+                "Favorite Subject": data.get("favSubject"),
+                "Least Favorite Subject": data.get("leastFavSubject"),
+                "Achievements": data.get("achievements")
+            },
+            "Social Media": {
+                "Instagram ID": data.get("instagram"),
+                "Telegram Username": data.get("telegram"),
+                "WhatsApp Number": data.get("whatsapp")
+            },
+            "Fun & Memories": {
+                "Funniest Memory": data.get("memory"),
+                "What You Like Most About Them": data.get("likes"),
+                "Personal Message or Quote": data.get("message")
+            }
         }
-    }
 
-    pdf = PDF()
-    pdf.add_page()
+        pdf = PDF()
+        pdf.add_page()
+        for title, content in sections.items():
+            pdf.add_section(title, content)
 
-    if photo_path:
-        pdf.add_photo(photo_path)
+        filename = f"you_know_i_know_{datetime.now().strftime('%Y%m%d%H%M%S')}.pdf"
+        output_dir = "/tmp"
+        os.makedirs(output_dir, exist_ok=True)
+        filepath = os.path.join(output_dir, filename)
+        pdf.output(filepath)
 
-    for title, content in sections.items():
-        pdf.add_section(title, content)
+        return send_file(filepath, as_attachment=True, download_name=filename, mimetype='application/pdf')
 
-    filename = f"friend_{datetime.now().strftime('%Y%m%d%H%M%S')}.pdf"
-    filepath = os.path.join("/data/data/com.termux/files/home", filename)
-    pdf.output(filepath)
-
-    return send_file(filepath, as_attachment=True)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=8080)
+    app.run(debug=True, port=5000)
