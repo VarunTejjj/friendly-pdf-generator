@@ -1,5 +1,5 @@
 Project Title: You Know, I Know - PDF Generator  
-Created By: Varun Tej (Memory)
+Created By: Varun Tej 
 
 Description:
 -------------
