@@ -1,0 +1,21 @@
+## Project: "You Know, I Know" PDF Generator
+
+### 1. Termux Setup Commands
+
+pkg update && pkg upgrade -y
+pkg install python -y
+pip install --upgrade pip
+pip install flask fpdf
+
+# Move your files (index.html, style.css, app.py) into this folder ( and note the path) 
+
+then commands
+
+cd && ls 
+cd /storage/emulated/0/Where you moved your files
+
+for example - cd /storage/emulated/0/Projects
+
+python app.py
+
+# Visit http://127.0.0.1:8080 in your browser.

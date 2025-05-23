@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Yo lo sé, ¿tú lo sabes?</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="container">
+    <h1>Yo lo sé, ¿tú lo sabes?</h1>
+    <form id="friendForm" enctype="multipart/form-data">
+      <h2>Basic Information</h2>
+      <input type="text" name="fullName" placeholder="Full Name" required />
+      <input type="text" name="nickname" placeholder="Nickname" />
+      <input type="text" name="gender" placeholder="Gender" />
+      <input type="date" name="dob" placeholder="Date of Birth" />
+      <input type="number" name="age" placeholder="Age" />
+      <input type="text" name="bloodGroup" placeholder="Blood Group" />
+
+      <h2>Contact Information</h2>
+      <input type="tel" name="phone" placeholder="Phone Number" />
+      <input type="email" name="email" placeholder="Email" />
+      <input type="text" name="address" placeholder="Address" />
+      <input type="text" name="city" placeholder="City" />
+      <input type="text" name="state" placeholder="State" />
+      <input type="text" name="pin" placeholder="PIN Code" />
+
+      <h2>Personal Info</h2>
+      <input type="text" name="hobbies" placeholder="Hobbies" />
+      <input type="text" name="favFood" placeholder="Favorite Food" />
+      <input type="text" name="favColor" placeholder="Favorite Color" />
+      <input type="text" name="favGame" placeholder="Favorite Game/Movie/Song" />
+      <input type="text" name="bestFriend" placeholder="Best Friend's Name" />
+      <input type="text" name="crush" placeholder="Crush or Lover (optional)" />
+
+      <h2>School/College Info</h2>
+      <input type="text" name="school" placeholder="School/College Name" />
+      <input type="text" name="class" placeholder="Class/Grade" />
+      <input type="text" name="favSubject" placeholder="Favorite Subject" />
+      <input type="text" name="leastFavSubject" placeholder="Least Favorite Subject" />
+      <input type="text" name="achievements" placeholder="Achievements" />
+
+      <h2>Social Media</h2>
+      <input type="text" name="instagram" placeholder="Instagram ID" />
+      <input type="text" name="telegram" placeholder="Telegram Username" />
+      <input type="text" name="whatsapp" placeholder="WhatsApp Number" />
+
+      <h2>Fun & Memories</h2>
+      <textarea name="memory" placeholder="Funniest Memory"></textarea>
+      <textarea name="likes" placeholder="What You Like Most About Them"></textarea>
+      <textarea name="message" placeholder="Personal Message or Quote"></textarea>
+
+      <h2>Upload a Photo</h2>
+      <input type="file" name="photo" accept="image/*" />
+
+      <button type="submit">Generate PDF</button>
+    </form>
+  </div>
+
+  <script>
+    document.getElementById('friendForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const form = e.target;
+      const formData = new FormData(form);
+
+      const res = await fetch('/generate-pdf', {
+        method: 'POST',
+        body: formData
+      });
+
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = "yo_lo_se_tu_lo_sabes.pdf";
+      a.click();
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+# Copyright and Project Details
+
+Project Name: You Know, I Know - Friend PDF Generator
+Created by: Varun Tej (aka Memory)
+Started: May 6, 2025
+Completed: May 7, 2025
+
+Tools Used:
+- Flask (Python)
+- FPDF (PDF Generation)
+- Termux on Android
+
+Purpose:
+To collect detailed information about friends and generate a clean, official-style PDF for memories, friendship keepsakes, or creative gifts.
+
+All rights reserved by Varun Tej.
