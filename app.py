@@ -1,9 +1,13 @@
 from flask import Flask, request, send_file, jsonify
+from werkzeug.utils import secure_filename
 from fpdf import FPDF
 import os
 from datetime import datetime
 
 app = Flask(__name__)
+
+UPLOAD_FOLDER = '/data/data/com.termux/files/home/uploads'
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 class PDF(FPDF):
     def header(self):
@@ -30,10 +34,22 @@ class PDF(FPDF):
 @app.route('/generate-pdf', methods=['POST'])
 def generate_pdf():
     try:
-        data = request.json
+        # Get form data
+        data = request.form.to_dict()
+        photo = request.files.get('photo')  # Uploaded file
+
         if not data:
             return jsonify({'error': 'No data provided'}), 400
 
+        # Save uploaded photo (optional)
+        if photo:
+            filename = secure_filename(photo.filename)
+            photo_path = os.path.join(UPLOAD_FOLDER, filename)
+            photo.save(photo_path)
+        else:
+            photo_path = None  # In case you want to use it later
+
+        # Data sections
         sections = {
             "Basic Information": {
                 "Full Name": data.get("fullName"),
@@ -78,15 +94,14 @@ def generate_pdf():
             }
         }
 
+        # Create PDF
         pdf = PDF()
         pdf.add_page()
         for title, content in sections.items():
             pdf.add_section(title, content)
 
         filename = f"you_know_i_know_{datetime.now().strftime('%Y%m%d%H%M%S')}.pdf"
-        output_dir = "/tmp"
-        os.makedirs(output_dir, exist_ok=True)
-        filepath = os.path.join(output_dir, filename)
+        filepath = os.path.join("/tmp", filename)
         pdf.output(filepath)
 
         return send_file(filepath, as_attachment=True, download_name=filename, mimetype='application/pdf')
